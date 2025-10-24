@@ -1,0 +1,111 @@
+class Contact:
+    """
+    Contact class to represent a contact with a name and number.
+    """
+    def __init__(self, name: str, number: str):
+        self.name = name
+        self.number = number
+
+    def __str__(self):
+        return f"{self.name}: {self.number}"
+
+
+class Node:
+    """
+    Node class for a linked list in the hash table.
+    """
+    def __init__(self, key: str, value: Contact):
+        self.key = key
+        self.value = value
+        self.next = None
+
+
+class HashTable:
+    """
+    HashTable class to store contacts with separate chaining for collisions.
+    """
+    def __init__(self, size: int):
+        self.size = size
+        self.data = [None] * size
+
+    def hash_function(self, key: str) -> int:
+        """
+        Simple hash function using sum of ASCII values.
+        """
+        return sum(ord(c) for c in key) % self.size
+
+    def insert(self, key: str, number: str):
+        """
+        Inserts or updates a contact in the hash table.
+        """
+        index = self.hash_function(key)
+        contact = Contact(key, number)
+        node = self.data[index]
+
+        # If no node exists at index, insert directly
+        if node is None:
+            self.data[index] = Node(key, contact)
+            return
+
+        # Traverse linked list to find if key exists or append at end
+        prev = None
+        while node:
+            if node.key == key:
+                node.value = contact  # Update existing contact
+                return
+            prev = node
+            node = node.next
+        prev.next = Node(key, contact)  # Add new node at end
+
+    def search(self, key: str):
+        """
+        Searches for a contact by name. Returns Contact or None.
+        """
+        index = self.hash_function(key)
+        node = self.data[index]
+        while node:
+            if node.key == key:
+                return node.value
+            node = node.next
+        return None
+
+    def print_table(self):
+        """
+        Prints the hash table structure.
+        """
+        for i, node in enumerate(self.data):
+            print(f"Index {i}:", end=" ")
+            if node is None:
+                print("Empty")
+            else:
+                current = node
+                while current:
+                    print(f"- {current.value}", end=" ")
+                    current = current.next
+                print()
+
+
+# Example Usage
+if __name__ == "__main__":
+    table = HashTable(10)
+    table.print_table()
+
+    table.insert("John", "909-876-1234")
+    table.insert("Rebecca", "111-555-0002")
+    table.print_table()
+
+    print("\nSearch result:", table.search("John"))  # John: 909-876-1234
+
+    # Edge Case - Collisions
+    table.insert("Amy", "111-222-3333")
+    table.insert("May", "222-333-1111")
+    table.print_table()
+
+    # Edge Case - Duplicate key
+    table.insert("Rebecca", "999-444-9999")
+    table.print_table()
+
+    # Edge Case - Searching non-existent contact
+    print(table.search("Chris"))  # None
+
+
